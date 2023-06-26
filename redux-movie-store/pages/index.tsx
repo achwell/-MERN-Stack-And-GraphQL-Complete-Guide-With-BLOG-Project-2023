@@ -1,76 +1,104 @@
-import {useState} from "react"
+import {useState} from 'react';
 import type {NextPage} from 'next'
-import {useDispatch, useSelector} from "react-redux"
-import {Button, Card, CardActions, CardContent, Typography} from "@material-ui/core";
-import {AddShoppingCart, Favorite, FavoriteBorder, RemoveShoppingCart} from "@material-ui/icons";
+import {useDispatch, useSelector} from 'react-redux';
+import {Dispatch} from 'redux';
+import {Button, Card, CardActions, CardContent, TextField, Typography} from "@mui/material";
+import {AddShoppingCart, Favorite, FavoriteBorder, RemoveShoppingCart} from "@mui/icons-material";
+import {addMovie, addToBasket, addToLikeMovies} from "../store"
+
+interface RootState {
+    movies: {
+        title: string
+        liked: boolean
+        inBasket: boolean
+    }[]
+    basket: string[]
+    likedMovies: string[]
+}
+
 
 const Home: NextPage = () => {
 
-    const dispatch = useDispatch()
-    const movies = useSelector((state: {
-        movies: { title: string; liked: boolean; inBasket: boolean } []
-    }) => state.movies)
-    const basket = useSelector((state: { basket: string[] }) => state.basket)
-    const likedMovies = useSelector((state: { likedMovies: string[] }) => state.likedMovies)
+    const [movieTitle, setMovieTitle] = useState('');
+    const dispatch: Dispatch<any> = useDispatch();
+    const movies = useSelector((state: RootState) => state.movies);
+    const basket = useSelector((state: RootState) => state.basket);
+    const likedMovies = useSelector((state: RootState) => state.likedMovies);
 
-    const [movieTitle, setMovieTitle] = useState("")
-
-    console.log({movies, basket, likedMovies})
-
-    const handleAddMovie = () => {
-        const newMovie = {title: movieTitle, liked: false, inBasket: false}
-        dispatch({type: "ADD_MOVIE", payload: newMovie})
-        setMovieTitle("")
+    function handleAddMovie() {
+        const newMovie = {
+            title: movieTitle.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            inBasket: false,
+            liked: false
+        };
+        dispatch(addMovie(newMovie));
+        setMovieTitle('');
     }
 
-    const handleAddToBasket = (movie: string) => {
-        dispatch({type: "ADD_TO_BASKET", payload: movie})
+    function handleLikeMovie(movieTitle: string) {
+        dispatch(addToLikeMovies(movieTitle));
     }
 
-    const handleAddToLikedMovies = (movie: string) => {
-        dispatch({type: "ADD_TO_LIKED_MOVIES", payload: movie})
+    function handleAddToBasket(movieTitle: string) {
+        dispatch(addToBasket(movieTitle));
     }
+
     return (
         <div className="container">
-            <div>
-                <h1>My Movie List</h1>
-            </div>
+            <h1 className="title">My Movie List</h1>
             <div className="add-movie">
-                <input
-                    type="text"
+                <TextField
                     placeholder="Enter a movie title"
                     value={movieTitle}
                     onChange={(e) => setMovieTitle(e.target.value)}
+                    className="input"
                 />
-                <button onClick={handleAddMovie}>Add Movie</button>
+                <Button onClick={handleAddMovie} className="button" variant="contained" color="primary">
+                    Add Movie
+                </Button>
             </div>
-            <h2>My movies ({movies.length})</h2>
-            <ul className="movie-list">
-                {movies.map((movie, index) => <Card key={index} className="movie-card">
-                    <CardContent>
-                        <Typography variant="h5" component="h2">{movie.title}</Typography>
-                    </CardContent>
-                    <CardActions>
-                    <Button
-                        startIcon={movie.inBasket ? <RemoveShoppingCart/> : <AddShoppingCart/>}
-                        onClick={() => handleAddToBasket(movie.title)}>{movie.inBasket ? "Remove from basket" : "Add to basket"}</Button>
-                    <Button
-                        startIcon={movie.liked ? <Favorite/> : <FavoriteBorder/>}
-                        onClick={() => handleAddToLikedMovies(movie.title)}>{movie.liked ? "Dislike" : "Like"}</Button>
-                    </CardActions>
-                </Card>)}
+            <h2 className="subtitle">My Movies</h2>
+            <div className="movie-list">
+                {movies.map((movie, index) => (
+                    <Card key={index} className="movie-card">
+                        <CardContent>
+                            <Typography variant="h5" component="h2">
+                                {movie.title}
+                            </Typography>
+                        </CardContent>
+                        <CardActions>
+                            <Button
+                                startIcon={movie.liked ? <Favorite/> : <FavoriteBorder/>}
+                                onClick={() => handleLikeMovie(movie.title)}
+                                className="like-button"
+                            >
+                                {movie.liked ? 'Liked' : 'Not Liked'}
+                            </Button>
+                            <Button
+                                startIcon={movie.inBasket ? <RemoveShoppingCart/> : <AddShoppingCart/>}
+                                onClick={() => handleAddToBasket(movie.title)}
+                                className="basket-button"
+                            >
+                                {movie.inBasket ? 'Remove from basket' : 'Add to basket'}
+                            </Button>
+                        </CardActions>
+                    </Card>
+                ))}
+            </div>
+            <h2 className="subtitle">My Basket ({basket.length})</h2>
+            <ul className="basket">
+                {basket.map((movie, index) => (
+                    <li key={index}>{movie}</li>
+                ))}
             </ul>
-            <h2>My Basket ({basket.length})</h2>
-            <ul>
-                {basket.map((movie, index) => <li key={index}>{movie}</li>)}
+            <h2 className="subtitle">Liked Movies ({likedMovies.length})</h2>
+            <ul className="liked-movies">
+                {likedMovies.map((movie, index) => (
+                    <li key={index}>{movie}</li>
+                ))}
             </ul>
-            <h2>My liked movies ({likedMovies.length})</h2>
-            <ul>
-                {likedMovies.map((movie, index) => <li key={index}>{movie}</li>)}
-            </ul>
-
         </div>
-    )
+    );
 }
 
-export default Home
+export default Home;
