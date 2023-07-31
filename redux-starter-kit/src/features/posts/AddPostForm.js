@@ -1,7 +1,8 @@
 import React, {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useHistory} from "react-router-dom";
-import {addNewPost, postAdded} from "./postsSlice";
+import {selectAllUsers} from "../users/usersSlice";
+import {addNewPost} from "./postsSlice";
 
 export const AddPostForm = () => {
     const [title, setTitle] = useState('')
@@ -13,7 +14,7 @@ export const AddPostForm = () => {
     const dispatch = useDispatch();
     const history = useHistory();
 
-    const users = useSelector(state => state.users)
+    const users = useSelector(selectAllUsers)
 
     const onTitleChanged = e => setTitle(e.target.value);
     const onContentChanged = e => setContent(e.target.value);
@@ -25,10 +26,11 @@ export const AddPostForm = () => {
         if (canSave) {
             try {
                 setAddRequestStatus("pending")
-                await dispatch(addNewPost({title, content, user: userId})).unwrap()
+                let newPost = await dispatch(addNewPost({title, content, user: userId})).unwrap();
                 setTitle("");
                 setContent("");
                 setUserId("");
+                history.push(`/editPost/${newPost.id}`)
             } catch (err) {
                 console.error("Failed to save post", err)
             } finally {

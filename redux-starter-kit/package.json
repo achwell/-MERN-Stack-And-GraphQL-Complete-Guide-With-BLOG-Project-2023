@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@mswjs/data": "^0.8.4",
+    "@redux-devtools/extension": "^3.2.5",
     "@reduxjs/toolkit": "^1.6.1",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
