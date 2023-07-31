@@ -1,12 +1,12 @@
-import { rest, setupWorker } from 'msw'
-import { factory, oneOf, manyOf, primaryKey } from '@mswjs/data'
-import { nanoid } from '@reduxjs/toolkit'
+import {rest, setupWorker} from 'msw'
+import {factory, manyOf, oneOf, primaryKey} from '@mswjs/data'
+import {nanoid} from '@reduxjs/toolkit'
 import faker from 'faker'
 import seedrandom from 'seedrandom'
-import { Server as MockSocketServer } from 'mock-socket'
-import { setRandom } from 'txtgen'
+import {Server as MockSocketServer} from 'mock-socket'
+import {setRandom} from 'txtgen'
 
-import { parseISO } from 'date-fns'
+import {parseISO} from 'date-fns'
 
 const NUM_USERS = 3
 const POSTS_PER_USER = 3
@@ -287,7 +287,7 @@ function generateRandomNotifications(since, numNotifications, db) {
 
   // Create N random notifications. We won't bother saving these
   // in the DB - just generate a new batch and return them.
-  const notifications = [...Array(numNotifications)].map(() => {
+  return [...Array(numNotifications)].map(() => {
     const user = randomFromArray(db.user.getAll())
     const template = randomFromArray(notificationTemplates)
     return {
@@ -297,6 +297,4 @@ function generateRandomNotifications(since, numNotifications, db) {
       user: user.id,
     }
   })
-
-  return notifications
 }
