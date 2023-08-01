@@ -1,40 +1,40 @@
-import React, {useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {useHistory} from "react-router-dom";
-import {selectAllUsers} from "../users/usersSlice";
-import {addNewPost} from "./postsSlice";
+import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
+import {selectAllUsers} from '../users/usersSlice'
+import { useAddNewPostMutation } from '../../api/apiSlice'
+import {Spinner} from "../../components/Spinner";
 
 export const AddPostForm = () => {
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
     const [userId, setUserId] = useState('')
-    const [addRequestStatus, setAddRequestStatus] = useState('idle')
 
-
-    const dispatch = useDispatch();
-    const history = useHistory();
+    const [addNewPost, {isLoading}] = useAddNewPostMutation()
 
     const users = useSelector(selectAllUsers)
 
-    const onTitleChanged = e => setTitle(e.target.value);
-    const onContentChanged = e => setContent(e.target.value);
-    const onAuthorChanged = e => setUserId(e.target.value);
+    const onTitleChanged = e => setTitle(e.target.value)
+    const onContentChanged = e => setContent(e.target.value)
+    const onAuthorChanged = e => setUserId(e.target.value)
 
-    const canSave = [title, content, userId].every(Boolean) && addRequestStatus === "idle"
+    /*
+    write a function onSavePostClicked that checks whether the
+    title and content are both true and if so dispatches a new post
+    with a random unique id and resets the state of the title and
+    content
+    */
+
+    const canSave = [title, content, userId].every(Boolean) && !isLoading
 
     const onSavePostClicked = async () => {
         if (canSave) {
             try {
-                setAddRequestStatus("pending")
-                let newPost = await dispatch(addNewPost({title, content, user: userId})).unwrap();
+                await addNewPost({title, content, user: userId}).unwrap();
                 setTitle("");
                 setContent("");
                 setUserId("");
-                history.push(`/editPost/${newPost.id}`)
             } catch (err) {
                 console.error("Failed to save post", err)
-            } finally {
-                setAddRequestStatus("idle")
             }
         }
     }
@@ -49,6 +49,7 @@ export const AddPostForm = () => {
         <section>
             <h2>Add A New Post</h2>
             <form>
+                {isLoading && <Spinner text="Saving"/>}
                 <label htmlFor='postTitle'>Post Title:</label>
                 <input
                     type='text'

@@ -1,55 +1,50 @@
-import React, { useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {useHistory} from "react-router-dom";
-import {postUpdated, selectPostsById} from "./postsSlice";
+import React, {useState} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {useEditPostMutation, useGetPostQuery} from '../../api/apiSlice'
+import {Spinner} from "../../components/Spinner";
 
 export const EditPostForm = ({match}) => {
-    const {postId} = match.params;
-    const post = useSelector(state => selectPostsById(state, postId));
-    const [title, setTitle] = useState(post.title);
-    const [content, setContent] = useState(post.content);
 
-    const dispatch = useDispatch();
-    const history = useHistory();
+    const {postId} = match.params
 
-    const onTitleChanget = e => setTitle(e.target.value);
-    const onContentChanget = e => setContent(e.target.value);
+    const {data: post} = useGetPostQuery(postId)
+    const [updatePost, {isLoading}] = useEditPostMutation()
 
-    const onSavePostClicked = () => {
+    const [title, setTitle] = useState(post.title)
+    const [content, setContent] = useState(post.content)
+    const navigate = useNavigate()
+
+    const onTitleChanged = e => setTitle(e.target.value)
+    const onContentChanged = e => setContent(e.target.value)
+
+    const onSavePostClicked = async () => {
         if (title && content) {
-            dispatch(postUpdated({...post, title, content}));
-            setTitle("");
-            setContent("");
-            history.push(`/posts/${post.id}`)
+            await updatePost({id: postId, title, content})
+            navigate(`/posts/${postId}`)
         }
     }
-    if (!post) {
-        return (
-            <section>
-                <h2>Post not found!</h2>
-            </section>
-        )
-    }
+
     return (
         <section>
             <h2>Edit Post</h2>
             <form>
-                <label htmlFor="postTitle">Post Title:</label>
+                {isLoading && <Spinner text="Updating"/>}
+                <label htmlFor='postTitle'>Post Title:</label>
                 <input
-                    type="text"
-                    id="postTitle"
-                    name="postTitle"
+                    type='text'
+                    id='postTitle'
+                    name='postTitle'
                     value={title}
-                    onChange={onTitleChanget}
+                    onChange={onTitleChanged}
                 />
-                <label htmlFor="postContent">Post Content:</label>
+                <label htmlFor='postContent'>Content:</label>
                 <textarea
-                    id="postContent"
-                    name="postContent"
+                    id='postContent'
+                    name='postContent'
                     value={content}
-                    onChange={onContentChanget}
+                    onChange={onContentChanged}
                 />
-                <button type="button" onClick={onSavePostClicked}>Save Post</button>
+                <button type='button' onClick={onSavePostClicked} disabled={isLoading}>Save Post</button>
             </form>
         </section>
     )

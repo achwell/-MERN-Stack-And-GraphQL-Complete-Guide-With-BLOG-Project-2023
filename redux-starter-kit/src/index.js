@@ -1,27 +1,28 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import './index.css'
-import App from './App'
-import store from './app/store'
-import {Provider} from 'react-redux'
-import {fetchUsers} from "./features/users/usersSlice";
+import React from "react"
+import {createRoot} from "react-dom/client"
+import App from "./App"
+import store from "./app/store"
+import {Provider} from "react-redux"
+import {extendedApiSlice} from "./features/users/usersSlice"
 
-import {worker} from './api/server'
+import {worker} from "./api/server"
+import "./index.css"
 
-// Wrap app rendering so we can wait for the mock API to initialize
+// Wrap app rendering, so we can wait for the mock API to initialize
 async function start() {
+    const container = document.getElementById("root");
+    const root = createRoot(container);
     // Start our mock API server
-    await worker.start({onUnhandledRequest: 'bypass'})
+    await worker.start({onUnhandledRequest: "bypass"})
 
-    store.dispatch(fetchUsers())
+    store.dispatch(extendedApiSlice.endpoints.getUsers.initiate())
 
-    ReactDOM.render(
+    root.render(
         <React.StrictMode>
             <Provider store={store}>
                 <App/>
             </Provider>
-        </React.StrictMode>,
-        document.getElementById('root')
+        </React.StrictMode>
     )
 }
 

@@ -1,6 +1,6 @@
-import {useSelector} from "react-redux";
-import {Link} from "react-router-dom";
-import {selectAllUsers} from "./usersSlice";
+import {useSelector} from "react-redux"
+import {Link} from "react-router-dom"
+import {selectAllUsers} from "./usersSlice"
 
 const UsersList = () => {
     const users = useSelector(selectAllUsers)

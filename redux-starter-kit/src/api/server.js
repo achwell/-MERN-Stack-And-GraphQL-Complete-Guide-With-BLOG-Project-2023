@@ -1,10 +1,10 @@
 import {rest, setupWorker} from 'msw'
 import {factory, manyOf, oneOf, primaryKey} from '@mswjs/data'
 import {nanoid} from '@reduxjs/toolkit'
-import faker from 'faker'
 import seedrandom from 'seedrandom'
 import {Server as MockSocketServer} from 'mock-socket'
 import {setRandom} from 'txtgen'
+import { faker } from '@faker-js/faker';
 
 import {parseISO} from 'date-fns'
 
@@ -81,6 +81,7 @@ export const db = factory({
   },
   reaction: {
     id: primaryKey(nanoid),
+    raisingHands: Number,
     thumbsUp: Number,
     hooray: Number,
     heart: Number,
@@ -91,8 +92,8 @@ export const db = factory({
 })
 
 const createUserData = () => {
-  const firstName = faker.name.firstName()
-  const lastName = faker.name.lastName()
+  const firstName = faker.person.firstName()
+  const lastName = faker.person.lastName()
 
   return {
     firstName,
@@ -105,7 +106,7 @@ const createUserData = () => {
 const createPostData = (user) => {
   return {
     title: faker.lorem.words(),
-    date: faker.date.recent(RECENT_NOTIFICATIONS_DAYS).toISOString(),
+    date: faker.date.recent({days: RECENT_NOTIFICATIONS_DAYS}).toISOString(),
     user,
     content: faker.lorem.paragraphs(),
     reactions: db.reaction.create(),
@@ -147,8 +148,7 @@ export const handlers = [
 
     data.date = new Date().toISOString()
 
-    const user = db.user.findFirst({ where: { id: { equals: data.user } } })
-    data.user = user
+    data.user = db.user.findFirst({ where: { id: { equals: data.user } } })
     data.reactions = db.reaction.create()
 
     const post = db.post.create(data)
@@ -161,7 +161,7 @@ export const handlers = [
     return res(ctx.delay(ARTIFICIAL_DELAY_MS), ctx.json(serializePost(post)))
   }),
   rest.patch('/fakeApi/posts/:postId', (req, res, ctx) => {
-    const { id, ...data } = req.body
+    const { id, ...data } = req.json()
     const updatedPost = db.post.update({
       where: { id: { equals: req.params.postId } },
       data,
@@ -292,7 +292,7 @@ function generateRandomNotifications(since, numNotifications, db) {
     const template = randomFromArray(notificationTemplates)
     return {
       id: nanoid(),
-      date: faker.date.between(pastDate, now).toISOString(),
+      date: faker.date.between({from: pastDate, to: now}).toISOString(),
       message: template,
       user: user.id,
     }
